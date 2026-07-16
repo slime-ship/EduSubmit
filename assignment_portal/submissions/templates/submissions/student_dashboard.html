@@ -192,6 +192,77 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column: Recent Assignments -->
         <div class="lg:col-span-2">
+            <!-- Available Assignments Card -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-file-invoice mr-2 text-primary-600"></i>
+                        Available Assignments
+                    </h2>
+                </div>
+                
+                <div class="divide-y divide-gray-200">
+                    {% if active_assignments %}
+                        {% for assignment in active_assignments %}
+                        <div class="p-6 hover:bg-gray-50 transition-colors">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-primary-100 text-primary-800">
+                                            {{ assignment.course.code }}
+                                        </span>
+                                        <span class="text-xs text-gray-500">
+                                            By {{ assignment.created_by.user.full_name|default:"Department Lecturer" }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-gray-900 truncate mb-1">
+                                        {{ assignment.title }}
+                                    </h3>
+                                    <p class="text-sm text-gray-600 line-clamp-2 mb-3">
+                                        {{ assignment.description }}
+                                    </p>
+                                    <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-gray-500">
+                                        <span class="flex items-center {% if assignment.is_submitted %}text-green-600 font-medium{% else %}text-red-500 font-medium{% endif %}">
+                                            <i class="fas {% if assignment.is_submitted %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} mr-1.5"></i>
+                                            {% if assignment.is_submitted %}Submitted{% else %}Not Submitted Yet{% endif %}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fas fa-calendar-alt mr-1.5"></i>
+                                            Due: {{ assignment.deadline|date:"M d, Y H:i" }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex sm:flex-col items-stretch gap-2 shrink-0 sm:w-44">
+                                    {% if assignment.file %}
+                                    <a href="{{ assignment.file.url }}" target="_blank"
+                                       class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-xs font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-download mr-1.5"></i>
+                                        Download Question
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'upload_assignment' %}?assignment_id={{ assignment.id }}"
+                                       class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white {% if assignment.is_submitted %}bg-gray-600 hover:bg-gray-700{% else %}gradient-primary hover:opacity-90{% endif %} shadow-sm transition-all duration-150 text-center">
+                                        <i class="fas {% if assignment.is_submitted %}fa-redo{% else %}fa-upload{% endif %} mr-1.5"></i>
+                                        {% if assignment.is_submitted %}Resubmit Answer{% else %}Submit Answer{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="p-12 text-center">
+                        <div class="mx-auto h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                            <i class="fas fa-file-invoice text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No assignments published</h3>
+                        <p class="text-gray-500">There are no assignments published for your courses at this time.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Submissions Card -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">

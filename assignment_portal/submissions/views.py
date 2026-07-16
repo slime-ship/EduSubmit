@@ -191,6 +191,18 @@ def student_dashboard(request):
     ).count()
     completion_percentage = (total_submissions / total_assignments_avail * 100) if total_assignments_avail > 0 else 0
     
+    # Active assignments for those courses
+    active_assignments = Assignment.objects.filter(
+        course__in=current_courses,
+        session__is_active=True,
+        semester__is_active=True
+    ).select_related('course', 'course__lecturer__user').order_by('-created_at')
+    
+    # Check which assignments have been submitted
+    submitted_assignment_ids = set(submissions.values_list('assignment_id', flat=True))
+    for assignment in active_assignments:
+        assignment.is_submitted = assignment.id in submitted_assignment_ids
+        
     recent_submissions = submissions.order_by('-date_uploaded')[:5]
     
     context = {
@@ -203,6 +215,7 @@ def student_dashboard(request):
         'completion_percentage': round(completion_percentage),
         'average_grade': average_score,
         'recent_assignments': recent_submissions,
+        'active_assignments': active_assignments,
     }
     return render(request, 'submissions/student_dashboard.html', context)
 
@@ -343,6 +356,8 @@ def lecturer_dashboard(request):
     
     recent_submissions = submissions.order_by('-date_uploaded')[:10]
     
+    my_assignments = Assignment.objects.filter(created_by=lecturer).select_related('course', 'session', 'semester').order_by('-created_at')
+    
     context = {
         'lecturer': lecturer,
         'courses': courses,
@@ -353,6 +368,8 @@ def lecturer_dashboard(request):
         'total_courses': total_courses,
         'recent_submissions': recent_submissions,
         'recent_assignments': recent_submissions,
+        'my_assignments': my_assignments,
+        'upcoming_deadlines': my_assignments,
     }
     return render(request, 'submissions/admin_dashboard.html', context)
 
@@ -362,12 +379,16 @@ def lecturer_dashboard(request):
 def lecturer_assignments(request):
     lecturer = request.user.lecturer_profile
     status_filter = request.GET.get('status', 'all')
+    assignment_id = request.GET.get('assignment_id')
     
     courses = Course.objects.filter(department=lecturer.department) if lecturer.department else Course.objects.none()
     submissions = Submission.objects.filter(assignment__course__in=courses)
     
     if status_filter != 'all':
         submissions = submissions.filter(status=status_filter)
+        
+    if assignment_id:
+        submissions = submissions.filter(assignment_id=assignment_id)
         
     submissions = submissions.select_related('student__user', 'assignment', 'assignment__course', 'grade_record').order_by('-date_uploaded')
     
