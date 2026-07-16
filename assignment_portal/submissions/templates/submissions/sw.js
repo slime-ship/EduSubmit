@@ -1,7 +1,5 @@
-const CACHE_NAME = 'edusubmit-cache-v1';
+const CACHE_NAME = 'edusubmit-cache-v2';
 const ASSETS = [
-  '/',
-  '/login/',
   '/static/submissions/logo.svg',
   '/manifest.json'
 ];
@@ -31,16 +29,23 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Do not intercept or cache login, home, or django admin navigations
+  const url = new URL(event.request.url);
+  if (url.pathname === '/' || url.pathname.startsWith('/login') || url.pathname.startsWith('/admin')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       if (cachedResponse) {
         return cachedResponse;
       }
-      return fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/login/');
-        }
-      });
+      return fetch(event.request);
     })
   );
 });

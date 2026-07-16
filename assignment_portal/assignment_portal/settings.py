@@ -54,6 +54,9 @@ ALLOWED_HOSTS = ["*", "www.edu-submit.online"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://www.edu-submit.online",
+    "https://edu-submit.online",
+    "http://www.edu-submit.online",
+    "http://edu-submit.online",
 ]
 
 
