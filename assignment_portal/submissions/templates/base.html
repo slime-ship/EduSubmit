@@ -638,7 +638,8 @@
                     method: form.method || 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'
                     },
                     ...options
                 });
