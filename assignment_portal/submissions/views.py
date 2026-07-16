@@ -316,9 +316,13 @@ def lecturer_profile(request):
             return redirect('lecturer_profile')
     else:
         form = LecturerProfileEditForm(instance=lecturer)
+        
+    assignments = Assignment.objects.filter(created_by=lecturer).select_related('course', 'session', 'semester')
+    
     return render(request, 'submissions/lecturer_profile.html', {
         'lecturer': lecturer,
-        'form': form
+        'form': form,
+        'assignments': assignments,
     })
 
 
@@ -416,7 +420,7 @@ def grade_assignment(request, assignment_id):
     submission = get_object_or_404(
         Submission,
         id=assignment_id,
-        assignment__course__lecturer=lecturer
+        assignment__course__department=lecturer.department
     )
     
     grade_instance = getattr(submission, 'grade_record', None)
@@ -620,7 +624,7 @@ class LecturerViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def courses(self, request, pk=None):
         lecturer = self.get_object()
-        courses = Course.objects.filter(lecturer=lecturer)
+        courses = Course.objects.filter(department=lecturer.department) if lecturer.department else Course.objects.none()
         return Response([{"id": c.id, "code": c.code, "title": c.title} for c in courses])
 
 

@@ -531,7 +531,7 @@
         setTimeout(() => {
             showNotification('Grade report generated successfully!', 'success');
             // In real implementation, trigger download
-            window.open('/api/lecturer/grades-report/', '_blank');
+            window.open("{% url 'reports_view' %}?export=csv", '_blank');
         }, 1000);
     }
     

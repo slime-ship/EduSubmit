@@ -201,5 +201,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Created Assignments Section -->
+    <div class="mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-file-invoice mr-3 text-purple-500"></i>
+            Assignments Created by You
+        </h2>
+        
+        {% if assignments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-left">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Session</th>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
+                        <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for assignment in assignments %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ assignment.course.code }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ assignment.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ assignment.session.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ assignment.semester.get_name_display }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ assignment.deadline|date:"M d, Y H:i" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if assignment.file %}
+                            <a href="{{ assignment.file.url }}" target="_blank" class="text-primary-600 hover:text-primary-900 font-medium">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </a>
+                            {% else %}
+                            <span class="text-gray-400">No file</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-file-excel text-gray-400 text-2xl"></i>
+            </div>
+            <p class="text-gray-500">You haven't created any assignments yet.</p>
+            <a href="{% url 'create_assignment' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white gradient-primary hover:opacity-90">
+                <i class="fas fa-plus-circle mr-2"></i> Create Assignment
+            </a>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
