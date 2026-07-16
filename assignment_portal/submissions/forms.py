@@ -124,9 +124,9 @@ class UserRegistrationForm(UserCreationForm):
                 import re
                 matric_number = matric_number.strip().upper()
                 cleaned_data['matric_number'] = matric_number
-                pattern = r'^UAT\d{2}/\d{2}/\d{2}/\d{4}$'
+                pattern = r'^[A-Z0-9/\-_\. ]+$'
                 if not re.match(pattern, matric_number):
-                    self.add_error('matric_number', 'Matric number must be in the format: UAT23/03/04/3001')
+                    self.add_error('matric_number', 'Matric number must contain only letters, digits, slashes, hyphens, underscores, dots, or spaces.')
                 elif StudentProfile.objects.filter(matric_number=matric_number).exists():
                     self.add_error('matric_number', 'This matric number is already registered.')
             

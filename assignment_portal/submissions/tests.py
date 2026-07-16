@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 class FormValidationTestCase(TestCase):
     def test_matric_number_validation(self):
-        # Valid format
+        # Valid format (standard UAT)
         form_data = {
             'username': 'student_test',
             'email': 'student_test@edu.com',
@@ -16,12 +16,23 @@ class FormValidationTestCase(TestCase):
             'password2': 'testpass123',
         }
         form = UserRegistrationForm(data=form_data)
-        # Note: clean() will run and check unique constraints, and regex format
         self.assertTrue(form.is_valid(), form.errors)
 
-        # Invalid format
+        # Valid other custom formats
+        custom_formats = ['STU/2026/001', '2026-ENG-4321', '123456', 'DEPT_MAT.01']
+        for custom_mat in custom_formats:
+            form_data_custom = form_data.copy()
+            form_data_custom['username'] = f'student_{custom_mat.replace("/", "_").replace("-", "_").replace(".", "_")}'
+            form_data_custom['email'] = f'student_{custom_mat.replace("/", "_").replace("-", "_").replace(".", "_")}@edu.com'
+            form_data_custom['matric_number'] = custom_mat
+            form_custom = UserRegistrationForm(data=form_data_custom)
+            self.assertTrue(form_custom.is_valid(), f"Failed for valid custom matric number: {custom_mat}. Errors: {form_custom.errors}")
+
+        # Invalid format (unsupported special character)
         form_data_invalid = form_data.copy()
-        form_data_invalid['matric_number'] = 'INVALID123'
+        form_data_invalid['username'] = 'student_invalid'
+        form_data_invalid['email'] = 'student_invalid@edu.com'
+        form_data_invalid['matric_number'] = 'STU@2026'
         form_invalid = UserRegistrationForm(data=form_data_invalid)
         self.assertFalse(form_invalid.is_valid())
         self.assertIn('matric_number', form_invalid.errors)

@@ -108,33 +108,30 @@
 </div>
 
 <script>
-    // Update departments based on faculty selection
-    async function updateDepartments(facultyId) {
-        const departmentSelect = document.getElementById('{{ form.department.id_for_label }}');
+    const departments = [
+        {% for dept in departments %}
+        {id: "{{ dept.id }}", name: "{{ dept.name }}", facultyId: "{{ dept.faculty.id }}"},
+        {% endfor %}
+    ];
+
+    function updateDepartments(facultyId) {
+        const deptSelect = document.getElementById('{{ form.department.id_for_label }}');
+        deptSelect.innerHTML = '<option value="">Select Department</option>';
         
         if (!facultyId) {
-            departmentSelect.innerHTML = '<option value="">Select Department</option>';
-            departmentSelect.disabled = true;
+            deptSelect.disabled = true;
             return;
         }
-        
-        // Fetch departments for the selected faculty
-        try {
-            const response = await fetch(`/api/departments/?faculty=${facultyId}`);
-            const departments = await response.json();
-            
-            departmentSelect.innerHTML = '<option value="">Select Department</option>';
-            departments.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept.id;
-                option.textContent = dept.name;
-                departmentSelect.appendChild(option);
-            });
-            
-            departmentSelect.disabled = false;
-        } catch (error) {
-            console.error('Error fetching departments:', error);
-        }
+
+        const filteredDepts = departments.filter(d => d.facultyId === facultyId);
+        filteredDepts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name;
+            deptSelect.appendChild(opt);
+        });
+
+        deptSelect.disabled = false;
     }
 </script>
 {% endblock %}
