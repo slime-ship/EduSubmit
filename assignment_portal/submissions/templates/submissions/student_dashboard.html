@@ -240,12 +240,18 @@
                                         Download Question
                                     </a>
                                     {% endif %}
-                                    
+                                    {% if not assignment.is_submitted %}
                                     <a href="{% url 'upload_assignment' %}?assignment_id={{ assignment.id }}"
-                                       class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white {% if assignment.is_submitted %}bg-gray-600 hover:bg-gray-700{% else %}gradient-primary hover:opacity-90{% endif %} shadow-sm transition-all duration-150 text-center">
-                                        <i class="fas {% if assignment.is_submitted %}fa-redo{% else %}fa-upload{% endif %} mr-1.5"></i>
-                                        {% if assignment.is_submitted %}Resubmit Answer{% else %}Submit Answer{% endif %}
+                                       class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-white gradient-primary hover:opacity-90 shadow-sm transition-all duration-150 text-center">
+                                        <i class="fas fa-upload mr-1.5"></i>
+                                        Submit Answer
                                     </a>
+                                    {% else %}
+                                    <div class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-medium rounded-lg text-green-700 bg-green-50 border-green-200 text-center select-none">
+                                        <i class="fas fa-check-circle mr-1.5 text-green-600"></i>
+                                        Submitted
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

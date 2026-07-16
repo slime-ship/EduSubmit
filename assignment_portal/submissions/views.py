@@ -231,17 +231,25 @@ def upload_assignment(request):
         level=student.level,
         is_active=True
     )
+    
+    # Exclude assignments already submitted by this student
+    submitted_assignment_ids = Submission.objects.filter(student=student).values_list('assignment_id', flat=True)
+    
     # Active assignments for those courses
     assignments = Assignment.objects.filter(
         course__in=current_courses,
         session__is_active=True,
         semester__is_active=True
-    ).select_related('course')
+    ).exclude(id__in=submitted_assignment_ids).select_related('course')
     
     assignment_id = request.GET.get('assignment_id')
     selected_assignment = None
     if assignment_id:
         selected_assignment = get_object_or_404(Assignment, id=assignment_id, course__in=current_courses)
+        # Check if already submitted
+        if selected_assignment.id in submitted_assignment_ids:
+            messages.error(request, f'You have already submitted "{selected_assignment.title}". Resubmission is not allowed.')
+            return redirect('student_dashboard')
         
     if request.method == 'POST':
         form = SubmissionForm(request.POST, request.FILES)
@@ -249,17 +257,18 @@ def upload_assignment(request):
         
         target_assignment = get_object_or_404(Assignment, id=target_assignment_id, course__in=current_courses)
         
+        # Check if already submitted (protection against duplicate/concurrent submissions)
+        if Submission.objects.filter(assignment=target_assignment, student=student).exists():
+            messages.error(request, f'You have already submitted "{target_assignment.title}". Resubmission is not allowed.')
+            return redirect('student_dashboard')
+            
         if form.is_valid():
-            submission, created = Submission.objects.get_or_create(
+            submission = Submission.objects.create(
                 assignment=target_assignment,
                 student=student,
-                defaults={'file': form.cleaned_data['file']}
+                file=form.cleaned_data['file']
             )
-            if not created:
-                submission.file = form.cleaned_data['file']
-                submission.status = 'pending'
-                submission.save()
-                
+            
             # Create notification for lecturer
             if target_assignment.course.lecturer:
                 Notification.objects.create(
