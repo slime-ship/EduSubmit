@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Student Profile - EduManage Pro{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Student Profile</h1>
+        <p class="mt-2 text-gray-600">
+            <i class="fas fa-user-edit mr-2"></i>
+            Manage your profile information and account security
+        </p>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'student_dashboard' %}" 
+           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in max-w-4xl mx-auto">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="space-y-3 mb-6">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-red-50 border border-red-200 text-red-800{% endif %} flex items-center">
+            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} mr-3"></i>
+            <div>{{ message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Left: Student Info Card -->
+        <div class="md:col-span-1">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
+                <div class="h-24 w-24 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
+                    {{ student.user.full_name|slice:":1" }}
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">{{ student.user.full_name }}</h3>
+                <p class="text-sm text-gray-500 mt-1">{{ student.matric_number }}</p>
+                <div class="mt-6 pt-6 border-t border-gray-200 text-left space-y-3 text-sm text-gray-600">
+                    <div>
+                        <span class="font-medium text-gray-800">Faculty:</span> {{ student.faculty.name }}
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-800">Department:</span> {{ student.department.name }}
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-800">Level:</span> {{ student.level.name }}
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-800">Admission Year:</span> {{ student.admission_year }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Profile Edit Form -->
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-edit mr-3 text-primary-500"></i>
+                    Update Personal Info
+                </h2>
+
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Matric Number (Read Only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">
+                            Matric Number (Not editable)
+                        </label>
+                        <input type="text" value="{{ student.matric_number }}" 
+                               class="block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed focus:outline-none"
+                               disabled>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div>
+                        <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name
+                        </label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.full_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div>
+                        <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number
+                        </label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <hr class="border-gray-200">
+
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center pt-2">
+                        <i class="fas fa-key mr-3 text-yellow-500"></i>
+                        Change Password (Optional)
+                    </h2>
+
+                    <!-- New Password -->
+                    <div>
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            New Password
+                        </label>
+                        {{ form.password }}
+                        <p class="mt-1 text-xs text-gray-500">Leave blank to keep your current password</p>
+                        {% if form.password.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Confirm New Password -->
+                    <div>
+                        <label for="{{ form.confirm_password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            Confirm New Password
+                        </label>
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.confirm_password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                            <i class="fas fa-save mr-2"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

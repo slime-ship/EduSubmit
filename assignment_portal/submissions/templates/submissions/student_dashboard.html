@@ -1,0 +1,666 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Student Dashboard - EduSubmit Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .assignment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .grade-badge {
+        font-size: 1.125rem;
+        font-weight: 700;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        min-width: 70px;
+    }
+    
+    .grade-a { background-color: #10b981; color: white; }
+    .grade-b { background-color: #3b82f6; color: white; }
+    .grade-c { background-color: #f59e0b; color: white; }
+    .grade-d { background-color: #ef4444; color: white; }
+    .grade-f { background-color: #6b7280; color: white; }
+    
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 0.5s ease;
+        stroke-linecap: round;
+    }
+    
+    .floating-action {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .course-chip {
+        background: linear-gradient(135deg, var(--color1, #667eea) 0%, var(--color2, #764ba2) 100%);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Welcome, {{ student.user.full_name }}</h1>
+        <p class="mt-2 text-gray-600">
+            <i class="fas fa-user-graduate mr-2"></i>
+            {{ student.level.name }} • {{ student.department.name }}
+        </p>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'upload_assignment' %}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 floating-action">
+            <i class="fas fa-plus-circle mr-2"></i>
+            New Assignment
+        </a>
+        <a href="" 
+           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-book mr-2"></i>
+            My Courses
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Student Information Banner -->
+    <div class="bg-gradient-to-r from-primary-500 to-primary-700 rounded-2xl p-6 text-white mb-8 shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center justify-between">
+            <div>
+                <div class="flex items-center mb-2">
+                    <div class="h-12 w-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-4">
+                        <i class="fas fa-id-card text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">{{ student.matric_number }}</h2>
+                        <p class="text-primary-100">Matric Number</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div>
+                        <p class="text-sm text-primary-200">Faculty</p>
+                        <p class="font-semibold">{{ student.faculty.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-200">Department</p>
+                        <p class="font-semibold">{{ student.department.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-200">Level</p>
+                        <p class="font-semibold">{{ student.level.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-200">Admission Year</p>
+                        <p class="font-semibold">{{ student.admission_year }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 md:mt-0 text-center">
+                <div class="relative inline-block">
+                    <svg class="w-24 h-24" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="8"/>
+                        <circle id="progressCircle" cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="8" 
+                                stroke-dasharray="283" stroke-dashoffset="0" class="progress-ring-circle" 
+                                style="stroke-dashoffset: {{ completion_percentage|default:0 }}"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-2xl font-bold">{{ completion_percentage|default:"0" }}%</span>
+                    </div>
+                </div>
+                <p class="text-sm mt-2 text-primary-200">Course Completion</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 card-hover">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-file-upload text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Assignments</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_assignments }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500 card-hover">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending Review</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ pending_assignments }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 card-hover">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Graded</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ graded_assignments }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 card-hover">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-book-open text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Current Courses</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_courses }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Recent Assignments -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                            Recent Submissions
+                        </h2>
+                        <div class="flex space-x-2">
+                            <button onclick="filterAssignments('all')" 
+                                    class="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                All
+                            </button>
+                            <button onclick="filterAssignments('pending')" 
+                                    class="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors">
+                                Pending
+                            </button>
+                            <button onclick="filterAssignments('graded')" 
+                                    class="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition-colors">
+                                Graded
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divide-y divide-gray-200">
+                    {% if recent_assignments %}
+                        {% for assignment in recent_assignments %}
+                        <div class="assignment-card p-6 hover:bg-gray-50 transition-colors assignment-row" 
+                             data-status="{{ assignment.status }}">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-3">
+                                        <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded mr-3">
+                                            {{ assignment.course.code }}
+                                        </span>
+                                        <span class="text-xs text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-1"></i>
+                                            {{ assignment.date_uploaded|date:"M d, Y" }}
+                                        </span>
+                                    </div>
+                                    
+                                    <h3 class="font-semibold text-gray-900 mb-2">{{ assignment.title }}</h3>
+                                    
+                                    {% if assignment.description %}
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+                                        {{ assignment.description|truncatechars:120 }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                                {% if assignment.status == 'graded' %}bg-green-100 text-green-800
+                                                {% elif assignment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                                {% elif assignment.status == 'under_review' %}bg-blue-100 text-blue-800
+                                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                                <i class="fas {% if assignment.status == 'graded' %}fa-check
+                                                    {% elif assignment.status == 'pending' %}fa-clock
+                                                    {% elif assignment.status == 'under_review' %}fa-eye
+                                                    {% else %}fa-redo{% endif %} mr-1"></i>
+                                                {{ assignment.get_status_display }}
+                                            </span>
+                                            
+                                            {% if assignment.grade %}
+                                            <span class="grade-badge grade-{{ assignment.grade|lower }}">
+                                                {{ assignment.grade }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="flex items-center space-x-2">
+                                            {% if assignment.feedback %}
+                                            <button onclick="showFeedback('{{ assignment.id }}')" 
+                                                    class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+                                                <i class="fas fa-comment-alt mr-1"></i>
+                                                View Feedback
+                                            </button>
+                                            {% endif %}
+                                            {% if assignment.file %}
+                                            <a href="{{ assignment.file.url }}" target="_blank"
+                                               class="inline-flex items-center text-sm text-gray-600 hover:text-gray-800">
+                                                <i class="fas fa-eye mr-1"></i>
+                                                View
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="p-12 text-center">
+                        <div class="mx-auto h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                            <i class="fas fa-file-import text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
+                        <p class="text-gray-500 mb-4">Start by uploading your first assignment</p>
+                        <a href="{% url 'upload_assignment' %}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white gradient-primary hover:opacity-90">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>
+                            Upload Assignment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if recent_assignments %}
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <a href="{% url 'student_assignments' %}" 
+                       class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-800">
+                        View all submissions
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Right Column: Quick Stats & Actions -->
+        <div class="space-y-6">
+            <!-- Current Courses -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-book mr-2 text-purple-500"></i>
+                        Current Courses
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    {% if courses %}
+                    <div class="space-y-4">
+                        {% for course in courses|slice:":5" %}
+                        <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-medium text-gray-900">{{ course.code }}</h3>
+                                    <p class="text-sm text-gray-500">{{ course.title }}</p>
+                                </div>
+                                <span class="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                                    {{ course.credit_units }} CU
+                                </span>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user-tie mr-2 text-gray-400"></i>
+                                {{ course.lecturer.user.full_name }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'student_dashboard' %}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="fas fa-list mr-2"></i>
+                            View All Courses
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6">
+                        <i class="fas fa-book-open text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">No courses assigned this semester</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Academic Performance -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-chart-line mr-2 text-green-500"></i>
+                        Academic Performance
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    {% if performance_data %}
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-600">Average Grade</span>
+                            <span class="text-xl font-bold text-gray-900">{{ average_grade }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-600">Submission Rate</span>
+                            <span class="text-xl font-bold text-gray-900">{{ submission_rate }}%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-600">Pending Work</span>
+                            <span class="text-xl font-bold text-yellow-600">{{ pending_assignments }} assignments</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6">
+                        <i class="fas fa-chart-bar text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">Submit assignments to see your performance</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-6 bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-lightbulb text-blue-500 text-xl mr-3"></i>
+                            <div>
+                                <p class="text-sm font-medium text-blue-900">Tip of the Day</p>
+                                <p class="text-xs text-blue-700 mt-1">Submit assignments early to get feedback sooner</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+                        Quick Actions
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="{% url 'upload_assignment' %}" 
+                           class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group">
+                            <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-cloud-upload-alt text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Upload</span>
+                            <span class="text-xs text-gray-500">New assignment</span>
+                        </a>
+                        
+                        <a href="" 
+                           class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group">
+                            <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+                                <i class="fas fa-history text-green-600 text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">History</span>
+                            <span class="text-xs text-gray-500">View all submissions</span>
+                        </a>
+                        
+                        <a href="" 
+                           class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group">
+                            <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
+                                <i class="fas fa-calendar-alt text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Schedule</span>
+                            <span class="text-xs text-gray-500">Course timetable</span>
+                        </a>
+                        
+                        <a href="" 
+                           class="flex flex-col items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors group">
+                            <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mb-3 group-hover:bg-red-200 transition-colors">
+                                <i class="fas fa-cog text-red-600 text-xl"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Settings</span>
+                            <span class="text-xs text-gray-500">Profile & preferences</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-comment-alt mr-2 text-blue-500"></i>
+                Assignment Feedback
+            </h3>
+            <button onclick="closeFeedback()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto">
+            <div id="feedbackContent">
+                <!-- Feedback content will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+            <button onclick="closeFeedback()" 
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter assignments
+    function filterAssignments(status) {
+        const rows = document.querySelectorAll('.assignment-row');
+        const buttons = document.querySelectorAll('.filter-btn');
+        
+        // Update active button
+        buttons.forEach(btn => {
+            if (btn.textContent.trim().toLowerCase().includes(status)) {
+                btn.classList.add('bg-primary-600', 'text-white');
+                btn.classList.remove('bg-primary-100', 'text-primary-800');
+            } else {
+                btn.classList.remove('bg-primary-600', 'text-white');
+                btn.classList.add('bg-primary-100', 'text-primary-800');
+            }
+        });
+        
+        // Filter rows
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = 'block';
+                row.classList.add('animate-slide-in');
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    // Show feedback modal
+    function showFeedback(assignmentId) {
+        const modal = document.getElementById('feedbackModal');
+        const content = document.getElementById('feedbackContent');
+        
+        // In a real application, you would fetch feedback from the server
+        // For now, we'll show a placeholder
+        const feedbackData = {
+            '1': {
+                title: 'Introduction to Programming Assignment',
+                grade: 'A',
+                lecturer: 'Dr. Jane Lecturer',
+                date: 'March 15, 2024',
+                feedback: 'Excellent work! Your code demonstrates a strong understanding of basic programming concepts. The structure is clean and well-organized. Some suggestions for improvement: Consider adding more comments for complex sections and implement error handling. Overall, great job!'
+            }
+        };
+        
+        const feedback = feedbackData[assignmentId] || {
+            title: 'Assignment Feedback',
+            grade: 'N/A',
+            lecturer: 'Lecturer',
+            date: 'Date',
+            feedback: 'No detailed feedback available for this assignment.'
+        };
+        
+        content.innerHTML = `
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-gray-900 mb-2">${feedback.title}</h4>
+                <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                    <span class="flex items-center">
+                        <i class="fas fa-graduation-cap mr-1"></i>
+                        Grade: <span class="font-bold ml-1">${feedback.grade}</span>
+                    </span>
+                    <span class="flex items-center">
+                        <i class="fas fa-user-tie mr-1"></i>
+                        ${feedback.lecturer}
+                    </span>
+                    <span class="flex items-center">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        ${feedback.date}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <h5 class="font-medium text-blue-900 mb-2 flex items-center">
+                    <i class="fas fa-comment-dots mr-2"></i>
+                    Lecturer's Feedback
+                </h5>
+                <p class="text-blue-800 whitespace-pre-wrap">${feedback.feedback}</p>
+            </div>
+            
+            <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h6 class="font-medium text-yellow-800 mb-2 flex items-center">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    Tips for Future Assignments
+                </h6>
+                <ul class="text-yellow-700 text-sm space-y-1">
+                    <li class="flex items-start">
+                        <i class="fas fa-check mt-1 mr-2 text-yellow-600"></i>
+                        Submit assignments well before the deadline
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check mt-1 mr-2 text-yellow-600"></i>
+                        Review the grading rubric before submission
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check mt-1 mr-2 text-yellow-600"></i>
+                        Include detailed comments in your code
+                    </li>
+                </ul>
+            </div>
+        `;
+        
+        modal.classList.remove('hidden');
+    }
+    
+    function closeFeedback() {
+        document.getElementById('feedbackModal').classList.add('hidden');
+    }
+    
+    // Progress circle animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressCircle = document.getElementById('progressCircle');
+        if (progressCircle) {
+            const offset = progressCircle.style.strokeDashoffset;
+            progressCircle.style.strokeDashoffset = '283'; // Start from full
+            setTimeout(() => {
+                progressCircle.style.strokeDashoffset = offset;
+            }, 300);
+        }
+        
+        // Add hover effects to assignment cards
+        const cards = document.querySelectorAll('.assignment-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('shadow-lg');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('shadow-lg');
+            });
+        });
+        
+        // Show welcome notification
+        setTimeout(() => {
+            showNotification('Welcome to your student dashboard!', 'info');
+        }, 1000);
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl+Shift+N for new assignment
+        if (e.ctrlKey && e.shiftKey && e.key === 'N') {
+            window.location.href = "{% url 'upload_assignment' %}";
+            e.preventDefault();
+        }
+        // Ctrl+Shift+V for view all
+        if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+            window.location.href = "";
+            e.preventDefault();
+        }
+        // Ctrl+Shift+C for courses
+        if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+            window.location.href = "";
+            e.preventDefault();
+        }
+    });
+    
+    // Auto-refresh stats every 30 seconds (optional)
+    // setInterval(() => {
+    //     fetch('/api/student/stats/')
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // Update stats cards
+    //             updateStats(data);
+    //         });
+    // }, 30000);
+    
+    // function updateStats(data) {
+    //     // Update stat cards with new data
+    //     document.querySelectorAll('.stat-card .text-2xl').forEach((el, index) => {
+    //         const stats = [data.total_assignments, data.pending_assignments, data.graded_assignments, data.total_courses];
+    //         if (stats[index] !== undefined) {
+    //             el.textContent = stats[index];
+    //         }
+    //     });
+    // }
+</script>
+{% endblock %}

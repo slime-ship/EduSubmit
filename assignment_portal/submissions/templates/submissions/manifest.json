@@ -1,0 +1,18 @@
+{
+  "name": "EduSubmit Portal",
+  "short_name": "EduSubmit",
+  "description": "Digital assignment submission and grading management system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/submissions/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

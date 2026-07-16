@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login - EduSubmit Portal{% endblock %}
+
+{% block content_wrapper %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 animate-fade-in">
+        <!-- Logo -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-2xl"></i>
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900">
+                Welcome Back
+            </h2>
+            <p class="mt-2 text-gray-600">
+                Sign in to your academic account
+            </p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="space-y-3">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg border {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} animate-fade-in">
+                <div class="flex items-center">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                    <div class="flex-1">{{ message }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Error Display -->
+        {% if form.errors %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                <div>
+                    <p class="text-red-800 font-medium">Please correct the errors below</p>
+                    <ul class="mt-2 text-sm text-red-700">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <li class="flex items-center mt-1">
+                                <i class="fas fa-arrow-right text-xs mr-2"></i>
+                                {{ error }}
+                            </li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li class="flex items-center mt-1">
+                            <i class="fas fa-arrow-right text-xs mr-2"></i>
+                            {{ error }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Login Form -->
+        <form class="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-200" method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <input type="hidden" name="next" value="{{ next }}">
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-user mr-1"></i>
+                        Username or Email
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-at text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               name="{{ form.username.name }}" 
+                               id="{{ form.username.id_for_label }}"
+                               value="{{ form.username.value|default:'' }}"
+                               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                               placeholder="Enter your username or email"
+                               autocomplete="username"
+                               required
+                               autofocus>
+                    </div>
+                    {% if form.username.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-lock mr-1"></i>
+                            Password
+                        </label>
+                        <a href="{% url 'password_reset' %}" class="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-key text-gray-400"></i>
+                        </div>
+                        <input type="password" 
+                               name="{{ form.password.name }}" 
+                               id="{{ form.password.id_for_label }}"
+                               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required>
+                        <button type="button" 
+                                onclick="togglePassword()" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           name="remember" 
+                           id="remember"
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="remember" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                        Remember me on this device
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" 
+                        id="submitBtn"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-white font-medium gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-sign-in-alt text-white"></i>
+                    </span>
+                    Sign In
+                    <span id="loadingSpinner" class="ml-2 hidden">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Demo Credentials -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                <h4 class="text-sm font-medium text-blue-900 mb-2 flex items-center">
+                    <i class="fas fa-flask mr-2 text-blue-500"></i>
+                    Demo Accounts
+                </h4>
+                <div class="space-y-2 text-xs text-blue-800">
+                    <div class="flex items-center">
+                        <span class="font-semibold w-20">Student:</span>
+                        <span>student01 / demo123</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-semibold w-20">Lecturer:</span>
+                        <span>lecturer01 / demo123</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-semibold w-20">Admin:</span>
+                        <span>admin / admin123</span>
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-blue-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    These are test accounts for demonstration purposes only
+                </p>
+            </div>
+        </form>
+
+        <!-- Registration Link -->
+        <div class="text-center">
+            <p class="text-sm text-gray-600">
+                Don't have an account?
+                <a href="{% url 'register' %}" class="font-medium text-primary-600 hover:text-primary-500 transition-colors">
+                    Register here
+                </a>
+            </p>
+            <p class="mt-2 text-xs text-gray-500">
+                Choose between student or lecturer account during registration
+            </p>
+        </div>
+
+        <!-- User Type Information -->
+        <div class="grid grid-cols-2 gap-4 mt-6">
+            <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                <div class="h-10 w-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h4 class="text-sm font-medium text-gray-900">Students</h4>
+                <p class="text-xs text-gray-500 mt-1">Submit assignments, view grades</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                <div class="h-10 w-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h4 class="text-sm font-medium text-gray-900">Lecturers</h4>
+                <p class="text-xs text-gray-500 mt-1">Grade assignments, manage courses</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-90 z-50 flex items-center justify-center hidden">
+    <div class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Signing you in...</p>
+        <p class="text-sm text-gray-500 mt-2">Please wait while we verify your credentials</p>
+    </div>
+</div>
+
+<script>
+    // Password toggle function
+    function togglePassword() {
+        const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+        const toggleIcon = document.querySelector('#{{ form.password.id_for_label }} + button i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    // Form submission handler
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        loadingSpinner.classList.remove('hidden');
+        loadingOverlay.classList.remove('hidden');
+        
+        // Validate form
+        const username = document.getElementById('{{ form.username.id_for_label }}').value.trim();
+        const password = document.getElementById('{{ form.password.id_for_label }}').value;
+        
+        if (!username || !password) {
+            e.preventDefault();
+            showError('Please fill in all required fields');
+            resetLoadingState();
+            return false;
+        }
+        
+        return true;
+    });
+
+    function showError(message) {
+        // Create error message element
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-lg animate-fade-in';
+        errorDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                <div class="text-red-800">${message}</div>
+            </div>
+        `;
+        
+        // Insert after form
+        const form = document.querySelector('form');
+        form.parentNode.insertBefore(errorDiv, form);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
+    }
+
+    function resetLoadingState() {
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        submitBtn.disabled = false;
+        loadingSpinner.classList.add('hidden');
+        loadingOverlay.classList.add('hidden');
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Enter to submit (if form is valid)
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+            const submitBtn = document.getElementById('submitBtn');
+            if (!submitBtn.disabled) {
+                document.querySelector('form').dispatchEvent(new Event('submit'));
+            }
+        }
+        
+        // Alt+P to toggle password visibility
+        if (e.altKey && e.key === 'p') {
+            e.preventDefault();
+            togglePassword();
+        }
+        
+        // Alt+R to focus on register link
+        if (e.altKey && e.key === 'r') {
+            e.preventDefault();
+            document.querySelector('a[href="{% url 'register' %}"]').focus();
+        }
+    });
+
+    // Auto-capitalize username input
+    document.getElementById('{{ form.username.id_for_label }}').addEventListener('input', function() {
+        // Remove any whitespace
+        this.value = this.value.trim();
+    });
+
+    // Demo account quick fill
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check URL for demo parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const demoType = urlParams.get('demo');
+        
+        if (demoType) {
+            const demoAccounts = {
+                'student': { username: 'student01', password: 'demo123' },
+                'lecturer': { username: 'lecturer01', password: 'demo123' },
+                'admin': { username: 'admin', password: 'admin123' }
+            };
+            
+            if (demoAccounts[demoType]) {
+                document.getElementById('{{ form.username.id_for_label }}').value = demoAccounts[demoType].username;
+                document.getElementById('{{ form.password.id_for_label }}').value = demoAccounts[demoType].password;
+                
+                // Show notification
+                showNotification(`Demo ${demoType} account loaded`, 'info');
+            }
+        }
+        
+        // Auto-focus on username field
+        const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+        if (usernameField && !usernameField.value) {
+            usernameField.focus();
+        }
+    });
+
+    // Show notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg animate-fade-in z-50 ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            type === 'warning' ? 'bg-yellow-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle'
+                } mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Session timeout warning (optional)
+    let warningShown = false;
+    function checkSessionTimeout() {
+        // This would typically check with server for session status
+        // For now, just demonstrate the concept
+        const warningTime = 5 * 60 * 1000; // 5 minutes
+        setTimeout(() => {
+            if (!warningShown && document.visibilityState === 'visible') {
+                showNotification('Your session will expire soon. Please save your work.', 'warning');
+                warningShown = true;
+            }
+        }, warningTime);
+    }
+    
+    // Initialize session timeout check
+    // checkSessionTimeout();
+</script>
+
+<style>
+    .spinner {
+        border: 3px solid rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        border-top: 3px solid #3b82f6;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}

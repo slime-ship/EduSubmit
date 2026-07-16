@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Upload Assignment - EduManage Pro{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Submit Assignment</h1>
+        <p class="mt-2 text-gray-600">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>
+            Upload your completed work for review and grading
+        </p>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'student_dashboard' %}" 
+           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="max-w-2xl mx-auto">
+        <!-- Student Information Card -->
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 mb-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="h-12 w-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-graduate text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">{{ student.user.full_name }}</h2>
+                        <p class="text-blue-100 text-sm">{{ student.matric_number }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-blue-100">Department</p>
+                    <p class="font-semibold">{{ student.department.code }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements Alert -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-lg font-medium text-blue-900 mb-2">Submission Requirements</h3>
+                    <ul class="space-y-2 text-blue-800">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2 text-blue-500"></i>
+                            File size must not exceed 20MB
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2 text-blue-500"></i>
+                            Accepted formats: PDF, DOC, DOCX, PPT, ZIP, RAR
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2 text-blue-500"></i>
+                            Include your name and matric number in the file
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2 text-blue-500"></i>
+                            Ensure your submission is complete before uploading
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-file-upload mr-3 text-primary-500"></i>
+                    Assignment Details
+                </h2>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="uploadForm" class="p-6 space-y-6">
+                {% csrf_token %}
+                
+                <!-- Course Selection -->
+                <div>
+                    <label for="course" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-book mr-1"></i>
+                        Select Course
+                    </label>
+                    <select name="course" 
+                            id="course"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                            required>
+                        <option value="">Select a course</option>
+                        {% for course in courses %}
+                        <option value="{{ course.id }}">{{ course.code }} - {{ course.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-2 text-sm text-gray-500">Choose the course this assignment belongs to</p>
+                </div>
+
+                <!-- Assignment Title -->
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-heading mr-1"></i>
+                        Assignment Title
+                    </label>
+                    <input type="text" 
+                           name="{{ form.title.name }}" 
+                           id="{{ form.title.id_for_label }}"
+                           class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                           placeholder="e.g., Lab Report 1, Project Proposal, Final Exam"
+                           required>
+                    <p class="mt-2 text-sm text-gray-500">Enter a descriptive title for your assignment</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-align-left mr-1"></i>
+                        Description (Optional)
+                    </label>
+                    <textarea name="{{ form.description.name }}" 
+                              id="{{ form.description.id_for_label }}"
+                              rows="4"
+                              class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                              placeholder="Briefly describe your submission..."></textarea>
+                    <div class="mt-2 flex justify-between items-center text-sm text-gray-500">
+                        <span>
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Additional notes for your lecturer
+                        </span>
+                        <span id="charCount">0/500</span>
+                    </div>
+                </div>
+
+                <!-- Deadline Information -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 text-xl mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-yellow-800">Submission Deadline</h4>
+                            <p class="text-sm text-yellow-700 mt-1" id="deadlineInfo">
+                                Select a course to see the deadline
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-paperclip mr-1"></i>
+                        Upload File
+                    </label>
+                    
+                    <!-- Drag & Drop Area -->
+                    <div id="dropArea" 
+                         class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                        <div class="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                            <i class="fas fa-cloud-upload-alt text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Drag & Drop your file here</h3>
+                        <p class="text-gray-500 mb-4">or click to browse your computer</p>
+                        <button type="button" 
+                                id="browseBtn"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="fas fa-folder-open mr-2"></i>
+                            Browse Files
+                        </button>
+                        <input type="file" 
+                               name="{{ form.file.name }}" 
+                               id="{{ form.file.id_for_label }}"
+                               class="hidden"
+                               accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar">
+                    </div>
+
+                    <!-- File Preview -->
+                    <div id="filePreview" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-pdf text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900" id="fileName">No file selected</p>
+                                    <p class="text-sm text-gray-500" id="fileSize">--</p>
+                                </div>
+                            </div>
+                            <button type="button" 
+                                    id="removeFile"
+                                    class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="uploadProgress" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 text-center" id="uploadStatus">Ready to upload</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-sm text-gray-500">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Your file will be securely uploaded and encrypted
+                    </div>
+                </div>
+
+                <!-- Submission Notes -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-green-800">Before you submit</h4>
+                            <ul class="mt-2 space-y-1 text-sm text-green-700">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check mt-1 mr-2 text-green-500"></i>
+                                    Double-check your file and information
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check mt-1 mr-2 text-green-500"></i>
+                                    Ensure you've selected the correct course
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check mt-1 mr-2 text-green-500"></i>
+                                    Verify that your name and matric are in the file
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-3 pt-6">
+                    <button type="submit" 
+                            id="submitBtn"
+                            class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Submit Assignment
+                    </button>
+                    
+                    <a href="{% url 'student_dashboard' %}" 
+                       class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Uploads -->
+        <div class="mt-8 bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-history mr-2 text-gray-500"></i>
+                Recent Uploads
+            </h3>
+            <div id="recentUploads" class="space-y-3">
+                {% if recent_uploads %}
+                    {% for upload in recent_uploads|slice:":3" %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="fas fa-file text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">{{ upload.title }}</p>
+                                <p class="text-sm text-gray-500">{{ upload.course.code }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500">{{ upload.date_uploaded|date:"M d" }}</p>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                {% if upload.status == 'graded' %}bg-green-100 text-green-800
+                                {% elif upload.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ upload.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No recent uploads</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full mx-4">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Uploading Assignment</h3>
+            <p class="text-gray-600 mb-4" id="uploadMessage">Please wait while we upload your file...</p>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="modalProgress" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // DOM Elements
+    const dropArea = document.getElementById('dropArea');
+    const browseBtn = document.getElementById('browseBtn');
+    const fileInput = document.getElementById('{{ form.file.id_for_label }}');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFileBtn = document.getElementById('removeFile');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+    const descriptionInput = document.getElementById('{{ form.description.id_for_label }}');
+    const courseSelect = document.getElementById('course');
+    const charCount = document.getElementById('charCount');
+    const deadlineInfo = document.getElementById('deadlineInfo');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const loadingModal = document.getElementById('loadingModal');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const modalProgress = document.getElementById('modalProgress');
+
+    // Course deadlines (would come from database in real app)
+    const courseDeadlines = {
+        {% for course in courses %}
+        "{{ course.id }}": "{{ course.deadline|date:'F j, Y H:i'|default:'No deadline set' }}",
+        {% endfor %}
+    };
+
+    // File type icons
+    const fileIcons = {
+        'pdf': 'fa-file-pdf text-red-500',
+        'doc': 'fa-file-word text-blue-500',
+        'docx': 'fa-file-word text-blue-500',
+        'ppt': 'fa-file-powerpoint text-orange-500',
+        'pptx': 'fa-file-powerpoint text-orange-500',
+        'zip': 'fa-file-archive text-gray-500',
+        'rar': 'fa-file-archive text-gray-500',
+        'default': 'fa-file text-gray-500'
+    };
+
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Get file icon class
+    function getFileIcon(filename) {
+        const extension = filename.split('.').pop().toLowerCase();
+        return fileIcons[extension] || fileIcons.default;
+    }
+
+    // Update file preview
+    function updateFilePreview(file) {
+        if (file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            
+            // Update file icon
+            const fileIcon = filePreview.querySelector('.h-10.w-10 i');
+            fileIcon.className = `fas ${getFileIcon(file.name)}`;
+            
+            filePreview.classList.remove('hidden');
+            validateForm();
+            
+            // Simulate upload progress
+            simulateUploadProgress();
+        } else {
+            filePreview.classList.add('hidden');
+            submitBtn.disabled = true;
+            uploadProgress.style.width = '0%';
+            uploadStatus.textContent = 'Ready to upload';
+        }
+    }
+
+    // Simulate upload progress (for demo)
+    function simulateUploadProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            if (progress < 100) {
+                progress += 10;
+                uploadProgress.style.width = progress + '%';
+                uploadStatus.textContent = `Uploading... ${progress}%`;
+                modalProgress.style.width = progress + '%';
+            } else {
+                clearInterval(interval);
+                uploadStatus.textContent = 'Upload complete';
+            }
+        }, 200);
+    }
+
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropArea.classList.add('border-primary-500', 'bg-blue-50');
+    }
+
+    function unhighlight() {
+        dropArea.classList.remove('border-primary-500', 'bg-blue-50');
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            fileInput.files = files;
+            updateFilePreview(files[0]);
+        }
+    }
+
+    // Event listeners
+    browseBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            updateFilePreview(fileInput.files[0]);
+        }
+    });
+
+    removeFileBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        updateFilePreview(null);
+    });
+
+    // Course selection change
+    courseSelect.addEventListener('change', function() {
+        const courseId = this.value;
+        if (courseId && courseDeadlines[courseId]) {
+            deadlineInfo.textContent = courseDeadlines[courseId];
+            deadlineInfo.parentElement.classList.remove('bg-yellow-50');
+            deadlineInfo.parentElement.classList.add('bg-blue-50');
+        } else {
+            deadlineInfo.textContent = 'Select a course to see the deadline';
+            deadlineInfo.parentElement.classList.remove('bg-blue-50');
+            deadlineInfo.parentElement.classList.add('bg-yellow-50');
+        }
+        validateForm();
+    });
+
+    // Character counter for description
+    descriptionInput.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = `${count}/500`;
+        
+        if (count > 500) {
+            charCount.classList.add('text-red-600');
+        } else if (count > 400) {
+            charCount.classList.add('text-yellow-600');
+        } else {
+            charCount.classList.remove('text-red-600', 'text-yellow-600');
+            charCount.classList.add('text-gray-500');
+        }
+    });
+
+    // Form validation
+    function validateForm() {
+        const isCourseSelected = courseSelect.value !== '';
+        const isTitleFilled = titleInput.value.trim() !== '';
+        const isFileSelected = fileInput.files.length > 0;
+        
+        if (isCourseSelected && isTitleFilled && isFileSelected) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    titleInput.addEventListener('input', validateForm);
+    descriptionInput.addEventListener('input', validateForm);
+
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate file size (20MB limit)
+        const file = fileInput.files[0];
+        if (file && file.size > 20 * 1024 * 1024) {
+            showError('File size must not exceed 20MB');
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.zip', '.rar'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes(fileExtension)) {
+            showError('Please upload a valid file type (PDF, DOC, PPT, ZIP, RAR)');
+            return;
+        }
+
+        // Show loading modal
+        loadingModal.classList.remove('hidden');
+        uploadMessage.textContent = 'Uploading your assignment...';
+        
+        // Simulate upload process
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 10;
+            modalProgress.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                uploadMessage.textContent = 'Processing submission...';
+                
+                // Submit form after slight delay
+                setTimeout(() => {
+                    uploadForm.submit();
+                }, 1000);
+            }
+        }, 200);
+    });
+
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg';
+        errorDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                <div class="text-red-800">${message}</div>
+            </div>
+        `;
+        
+        uploadForm.prepend(errorDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
+        
+        // Scroll to error
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Auto-capitalize title
+    titleInput.addEventListener('blur', function() {
+        this.value = this.value.trim();
+        if (this.value) {
+            // Capitalize first letter of each word
+            this.value = this.value.replace(/\b\w/g, char => char.toUpperCase());
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter to submit
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            if (!submitBtn.disabled) {
+                uploadForm.dispatchEvent(new Event('submit'));
+            }
+        }
+        
+        // Escape to cancel
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'student_dashboard' %}";
+        }
+        
+        // Alt+F to focus on file upload
+        if (e.altKey && e.key === 'F') {
+            e.preventDefault();
+            browseBtn.focus();
+        }
+    });
+
+    // Prevent leaving page during upload
+    let isUploading = false;
+    window.addEventListener('beforeunload', function(e) {
+        if (isUploading) {
+            e.preventDefault();
+            e.returnValue = 'Your assignment is being uploaded. Are you sure you want to leave?';
+        }
+    });
+
+    // Auto-save draft (optional feature)
+    let draftTimeout;
+    function saveDraft() {
+        const draft = {
+            course: courseSelect.value,
+            title: titleInput.value,
+            description: descriptionInput.value,
+            fileName: fileInput.files[0]?.name || ''
+        };
+        localStorage.setItem('assignment_draft', JSON.stringify(draft));
+    }
+
+    ['input', 'change'].forEach(event => {
+        uploadForm.addEventListener(event, function() {
+            clearTimeout(draftTimeout);
+            draftTimeout = setTimeout(saveDraft, 30000);
+        });
+    });
+
+    // Load draft on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const draft = localStorage.getItem('assignment_draft');
+        if (draft) {
+            try {
+                const data = JSON.parse(draft);
+                if (confirm('Would you like to restore your last draft?')) {
+                    courseSelect.value = data.course || '';
+                    titleInput.value = data.title || '';
+                    descriptionInput.value = data.description || '';
+                    
+                    if (data.course) {
+                        courseSelect.dispatchEvent(new Event('change'));
+                    }
+                    
+                    descriptionInput.dispatchEvent(new Event('input'));
+                    validateForm();
+                }
+            } catch (e) {
+                console.error('Failed to parse draft:', e);
+            }
+        }
+        
+        // Clear draft on successful submission
+        localStorage.removeItem('assignment_draft');
+        
+        // Focus on title field
+        titleInput.focus();
+    });
+
+    // File size validation
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && file.size > 20 * 1024 * 1024) {
+            showError('File size exceeds 20MB limit. Please compress or choose a smaller file.');
+            this.value = '';
+            updateFilePreview(null);
+        }
+    });
+</script>
+
+<style>
+    .spinner {
+        border: 3px solid rgba(59, 130, 246, 0.1);
+        border-radius: 50%;
+        border-top: 3px solid #3b82f6;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}

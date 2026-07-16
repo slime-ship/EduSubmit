@@ -1,0 +1,836 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - EduSubmit Portal{% endblock %}
+
+{% block content_wrapper %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 animate-fade-in">
+        <!-- Logo -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
+                <i class="fas fa-user-plus text-white text-2xl"></i>
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900">
+                Create Account
+            </h2>
+            <p class="mt-2 text-gray-600">
+                Join our academic management system
+            </p>
+        </div>
+
+        <!-- User Type Selection -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 text-center">
+                    <i class="fas fa-user-tag mr-2 text-primary-500"></i>
+                    Select Account Type
+                </h3>
+                <div class="grid grid-cols-2 gap-4" id="userTypeSelection">
+                    <button type="button" 
+                            onclick="selectUserType('student')"
+                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-200 flex flex-col items-center user-type-btn"
+                            data-type="student">
+                        <div class="h-12 w-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3">
+                            <i class="fas fa-user-graduate text-xl"></i>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-1">Student</h4>
+                        <p class="text-xs text-gray-500 text-center">Submit assignments, track grades</p>
+                    </button>
+                    
+                    <button type="button" 
+                            onclick="selectUserType('lecturer')"
+                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-200 flex flex-col items-center user-type-btn"
+                            data-type="lecturer">
+                        <div class="h-12 w-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-3">
+                            <i class="fas fa-chalkboard-teacher text-xl"></i>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-1">Lecturer</h4>
+                        <p class="text-xs text-gray-500 text-center">Grade assignments, manage courses</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="space-y-3">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg border {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} animate-fade-in">
+                <div class="flex items-center">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                    <div class="flex-1">{{ message }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Student Registration Form -->
+        <div id="studentForm" class="hidden">
+            <div class="bg-white rounded-xl shadow-xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-user-graduate mr-2 text-blue-500"></i>
+                        Student Registration
+                    </h3>
+                    <button type="button" onclick="showUserTypeSelection()" class="text-sm text-primary-600 hover:text-primary-800">
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        Change Type
+                    </button>
+                </div>
+
+                <form method="POST" action="{% url 'register' %}" id="studentRegistrationForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="student">
+                    
+                    <div class="space-y-4">
+                        <!-- Student ID -->
+                        <div>
+                            <label for="student_matric_number" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-id-card mr-1"></i>
+                                Student ID / Matric Number
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-hashtag text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       name="matric_number" 
+                                       id="student_matric_number"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="e.g., U1234567"
+                                       required
+                                       autofocus>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Use your official university student ID</p>
+                        </div>
+
+                        <!-- In your student registration form, add these fields after matric_number -->
+<div>
+    <label for="student_admission_year" class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-calendar-alt mr-1"></i>
+        Admission Year
+    </label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-calendar text-gray-400"></i>
+        </div>
+        <input type="number" 
+               name="admission_year" 
+               id="student_admission_year"
+               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+               placeholder="e.g., 2023"
+               min="2000"
+               max="2026"
+               required>
+    </div>
+</div>
+
+<!-- Phone number field -->
+<div>
+    <label for="student_phone_number" class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-phone mr-1"></i>
+        Phone Number
+    </label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-phone-alt text-gray-400"></i>
+        </div>
+        <input type="tel" 
+               name="phone_number" 
+               id="student_phone_number"
+               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+               placeholder="Phone number (optional)">
+    </div>
+</div>
+
+                        <!-- Username -->
+<div>
+    <label for="lecturer_username" class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-user mr-1"></i>
+        Username
+    </label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-at text-gray-400"></i>
+        </div>
+        <input type="text" 
+               name="username" 
+               id="lecturer_username"
+               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+               placeholder="Choose a username"
+               required>
+    </div>
+    <p class="mt-1 text-xs text-gray-500">
+        <i class="fas fa-info-circle mr-1"></i>
+        This will be your login username (e.g., jsmith, dr_jane)
+    </p>
+</div>
+
+                        <!-- Full Name -->
+                        <div>
+                            <label for="student_full_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-user mr-1"></i>
+                                Full Name
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user-circle text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       name="full_name" 
+                                       id="student_full_name"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="Enter your full name"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="student_email" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-envelope mr-1"></i>
+                                University Email
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-at text-gray-400"></i>
+                                </div>
+                                <input type="email" 
+                                       name="email" 
+                                       id="student_email"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="student@university.edu"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div>
+                            <label for="student_password1" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-lock mr-1"></i>
+                                Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-key text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       name="password1" 
+                                       id="student_password1"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="Create a strong password"
+                                       required>
+                                <button type="button" 
+                                        onclick="togglePassword('student_password1')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2 space-y-1">
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i class="fas fa-check-circle mr-2 text-green-500 hidden" id="student_length"></i>
+                                    <i class="fas fa-times-circle mr-2 text-gray-300" id="student_length_off"></i>
+                                    At least 8 characters
+                                </div>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i class="fas fa-check-circle mr-2 text-green-500 hidden" id="student_uppercase"></i>
+                                    <i class="fas fa-times-circle mr-2 text-gray-300" id="student_uppercase_off"></i>
+                                    Contains uppercase letter
+                                </div>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <i class="fas fa-check-circle mr-2 text-green-500 hidden" id="student_number"></i>
+                                    <i class="fas fa-times-circle mr-2 text-gray-300" id="student_number_off"></i>
+                                    Contains number
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label for="student_password2" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-lock mr-1"></i>
+                                Confirm Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-key text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       name="password2" 
+                                       id="student_password2"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="Confirm your password"
+                                       required>
+                                <button type="button" 
+                                        onclick="togglePassword('student_password2')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="flex items-center text-xs hidden" id="student_password_match">
+                                    <i class="fas fa-check-circle mr-2 text-green-500"></i>
+                                    <span class="text-green-600">Passwords match</span>
+                                </div>
+                                <div class="flex items-center text-xs hidden" id="student_password_mismatch">
+                                    <i class="fas fa-times-circle mr-2 text-red-500"></i>
+                                    <span class="text-red-600">Passwords do not match</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                            id="studentSubmitBtn"
+                            class="w-full mt-6 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create Student Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lecturer Registration Form -->
+        <div id="lecturerForm" class="hidden">
+            <div class="bg-white rounded-xl shadow-xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-chalkboard-teacher mr-2 text-green-500"></i>
+                        Lecturer Registration
+                    </h3>
+                    <button type="button" onclick="showUserTypeSelection()" class="text-sm text-primary-600 hover:text-primary-800">
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        Change Type
+                    </button>
+                </div>
+
+                <form method="POST" action="{% url 'register' %}" id="lecturerRegistrationForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="lecturer">
+                    
+                    <div class="space-y-4">
+                        <!-- Staff ID -->
+                        <div>
+                            <label for="lecturer_staff_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-id-badge mr-1"></i>
+                                Staff ID
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-hashtag text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       name="staff_id" 
+                                       id="lecturer_staff_id"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="e.g., L001"
+                                       required
+                                       autofocus>
+                            </div>
+                        </div>
+
+
+<!-- Full Name -->
+<div>
+    <label for="lecturer_full_name" class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-id-card mr-1"></i>
+        Full Name
+    </label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user-circle text-gray-400"></i>
+        </div>
+        <input type="text" 
+               name="full_name" 
+               id="lecturer_full_name"
+               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+               placeholder="Enter your full name"
+               required>
+    </div>
+</div>
+
+
+                        <!-- Username -->
+<div>
+    <label for="lecturer_username" class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-user mr-1"></i>
+        Username
+    </label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-at text-gray-400"></i>
+        </div>
+        <input type="text" 
+               name="username" 
+               id="lecturer_username"
+               class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+               placeholder="Choose a username"
+               required>
+    </div>
+    <p class="mt-1 text-xs text-gray-500">
+        <i class="fas fa-info-circle mr-1"></i>
+        This will be your login username (e.g., jsmith, dr_jane)
+    </p>
+</div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="lecturer_email" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-envelope mr-1"></i>
+                                University Email
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-at text-gray-400"></i>
+                                </div>
+                                <input type="email" 
+                                       name="email" 
+                                       id="lecturer_email"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="lecturer@university.edu"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Designation -->
+                        <div>
+                            <label for="lecturer_designation" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-user-tie mr-1"></i>
+                                Designation
+                            </label>
+                            <select name="designation" 
+                                    id="lecturer_designation"
+                                    class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors">
+                                <option value="">Select designation</option>
+                                <option value="Professor">Professor</option>
+                                <option value="Associate Professor">Associate Professor</option>
+                                <option value="Assistant Professor">Assistant Professor</option>
+                                <option value="Lecturer">Lecturer</option>
+                                <option value="Senior Lecturer">Senior Lecturer</option>
+                                <option value="Visiting Faculty">Visiting Faculty</option>
+                                <option value="Teaching Assistant">Teaching Assistant</option>
+                            </select>
+                        </div>
+
+                        <!-- Password -->
+                        <div>
+                            <label for="lecturer_password1" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-lock mr-1"></i>
+                                Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-key text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       name="password1" 
+                                       id="lecturer_password1"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="Create a strong password"
+                                       required>
+                                <button type="button" 
+                                        onclick="togglePassword('lecturer_password1')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label for="lecturer_password2" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-lock mr-1"></i>
+                                Confirm Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-key text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       name="password2" 
+                                       id="lecturer_password2"
+                                       class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                                       placeholder="Confirm your password"
+                                       required>
+                                <button type="button" 
+                                        onclick="togglePassword('lecturer_password2')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-start">
+                            <input type="checkbox" 
+                                   name="terms" 
+                                   id="lecturer_terms"
+                                   class="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                   required>
+                            <label for="lecturer_terms" class="ml-2 text-sm text-gray-600">
+                                I agree to the <a href="#" class="text-primary-600 hover:text-primary-800">Terms of Service</a> 
+                                and <a href="#" class="text-primary-600 hover:text-primary-800">Privacy Policy</a>. 
+                                I confirm that I am an authorized staff member.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                            id="lecturerSubmitBtn"
+                            class="w-full mt-6 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white gradient-success hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>
+                        Create Lecturer Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Login Link -->
+        <div class="text-center">
+            <p class="text-sm text-gray-600">
+                Already have an account?
+                <a href="{% url 'login' %}" class="font-medium text-primary-600 hover:text-primary-500 transition-colors">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-90 z-50 flex items-center justify-center hidden">
+    <div class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-gray-600 font-medium">Creating your account...</p>
+        <p class="text-sm text-gray-500 mt-2">Please wait while we set up your profile</p>
+    </div>
+</div>
+<script>
+    // User type selection
+    let selectedUserType = '';
+    
+    function selectUserType(type) {
+        selectedUserType = type;
+        
+        // Update UI
+        document.querySelectorAll('.user-type-btn').forEach(btn => {
+            if (btn.dataset.type === type) {
+                btn.classList.add('border-primary-500', 'bg-primary-50', 'shadow-sm');
+                btn.classList.remove('border-gray-200');
+            } else {
+                btn.classList.remove('border-primary-500', 'bg-primary-50', 'shadow-sm');
+                btn.classList.add('border-gray-200');
+            }
+        });
+        
+        // Show appropriate form
+        if (type === 'student') {
+            document.getElementById('studentForm').classList.remove('hidden');
+            document.getElementById('lecturerForm').classList.add('hidden');
+            document.getElementById('userTypeSelection').classList.add('hidden');
+        } else if (type === 'lecturer') {
+            document.getElementById('lecturerForm').classList.remove('hidden');
+            document.getElementById('studentForm').classList.add('hidden');
+            document.getElementById('userTypeSelection').classList.add('hidden');
+        }
+    }
+    
+    function showUserTypeSelection() {
+        document.getElementById('studentForm').classList.add('hidden');
+        document.getElementById('lecturerForm').classList.add('hidden');
+        document.getElementById('userTypeSelection').classList.remove('hidden');
+        selectedUserType = '';
+        
+        // Reset button styles
+        document.querySelectorAll('.user-type-btn').forEach(btn => {
+            btn.classList.remove('border-primary-500', 'bg-primary-50', 'shadow-sm');
+            btn.classList.add('border-gray-200');
+        });
+    }
+
+    // Update the student validation function
+function validateStudentForm() {
+    const form = document.getElementById('studentRegistrationForm');
+    let isValid = true;
+    
+    // ... existing validation ...
+    
+    // Validate admission year
+    const admissionYear = document.getElementById('student_admission_year');
+    if (admissionYear && !admissionYear.value) {
+        showFieldError(admissionYear, 'Admission year is required');
+        isValid = false;
+    } else if (admissionYear && (admissionYear.value < 2000 || admissionYear.value > 2026)) {
+        showFieldError(admissionYear, 'Please enter a valid year between 2000 and 2026');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+    
+    // Password toggle function
+    function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = passwordField.nextElementSibling.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    // Password validation for student form
+    function validateStudentPassword() {
+        const password = document.getElementById('student_password1').value;
+        const confirmPassword = document.getElementById('student_password2').value;
+        
+        // Check password strength
+        const hasLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        
+        // Update icons
+        document.getElementById('student_length').classList.toggle('hidden', !hasLength);
+        document.getElementById('student_length_off').classList.toggle('hidden', hasLength);
+        document.getElementById('student_uppercase').classList.toggle('hidden', !hasUppercase);
+        document.getElementById('student_uppercase_off').classList.toggle('hidden', hasUppercase);
+        document.getElementById('student_number').classList.toggle('hidden', !hasNumber);
+        document.getElementById('student_number_off').classList.toggle('hidden', hasNumber);
+        
+        // Check password match
+        if (confirmPassword.length > 0) {
+            if (password === confirmPassword && password.length > 0) {
+                document.getElementById('student_password_match').classList.remove('hidden');
+                document.getElementById('student_password_mismatch').classList.add('hidden');
+            } else {
+                document.getElementById('student_password_match').classList.add('hidden');
+                document.getElementById('student_password_mismatch').classList.remove('hidden');
+            }
+        }
+    }
+    
+    // Event listeners for student password validation
+    document.getElementById('student_password1')?.addEventListener('input', validateStudentPassword);
+    document.getElementById('student_password2')?.addEventListener('input', validateStudentPassword);
+    
+    // Form validation
+    function validateForm(formId, userType) {
+        const form = document.getElementById(formId);
+        let isValid = true;
+        
+        // Clear previous errors
+        form.querySelectorAll('.field-error').forEach(error => error.remove());
+        form.querySelectorAll('.border-red-500, .bg-red-50').forEach(field => {
+            field.classList.remove('border-red-500', 'bg-red-50');
+        });
+        
+        // Check required fields
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                showFieldError(field, 'This field is required');
+                isValid = false;
+            }
+        });
+        
+        // Validate email format
+        const emailField = form.querySelector('input[type="email"]');
+        if (emailField && emailField.value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailField.value)) {
+                showFieldError(emailField, 'Please enter a valid email address');
+                isValid = false;
+            }
+        }
+        
+        // Validate password match
+        const password1 = form.querySelector('input[name="password1"]');
+        const password2 = form.querySelector('input[name="password2"]');
+        if (password1 && password2 && password1.value !== password2.value) {
+            showFieldError(password2, 'Passwords do not match');
+            isValid = false;
+        }
+        
+        // Validate password strength for both
+        if (password1 && password1.value.length < 8) {
+            showFieldError(password1, 'Password must be at least 8 characters');
+            isValid = false;
+        }
+        
+        // For student: validate matric number format
+        if (userType === 'student') {
+            const matricField = document.getElementById('student_matric_number');
+            if (matricField && !/^[A-Za-z0-9]{6,10}$/.test(matricField.value)) {
+                showFieldError(matricField, 'Please enter a valid matric number (6-10 alphanumeric characters)');
+                isValid = false;
+            }
+        }
+        
+        // For lecturer: validate staff ID
+        if (userType === 'lecturer') {
+            const staffIdField = document.getElementById('lecturer_staff_id');
+            if (staffIdField && !/^[A-Za-z0-9]{3,10}$/.test(staffIdField.value)) {
+                showFieldError(staffIdField, 'Please enter a valid staff ID (3-10 alphanumeric characters)');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    function showFieldError(field, message) {
+        // Remove existing error
+        const existingError = field.parentNode.parentNode.querySelector('.field-error');
+        if (existingError) existingError.remove();
+        
+        // Create error message
+        const errorDiv = document.createElement('p');
+        errorDiv.className = 'field-error mt-1 text-sm text-red-600 flex items-center';
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            ${message}
+        `;
+        
+        field.parentNode.parentNode.appendChild(errorDiv);
+        
+        // Highlight field
+        field.classList.add('border-red-500', 'bg-red-50');
+        
+        // Remove error on input
+        field.addEventListener('input', function() {
+            this.classList.remove('border-red-500', 'bg-red-50');
+            errorDiv.remove();
+        }, { once: true });
+        
+        // Scroll to error
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Form submission handlers - FIXED VERSION
+    document.getElementById('studentRegistrationForm')?.addEventListener('submit', function(e) {
+        // Only prevent default if validation fails
+        if (!validateForm('studentRegistrationForm', 'student')) {
+            e.preventDefault();
+            return false;
+        }
+        // If validation passes, show loading and let form submit normally
+        showLoading();
+        // Form will submit normally after this function returns
+    });
+    
+    document.getElementById('lecturerRegistrationForm')?.addEventListener('submit', function(e) {
+        // Only prevent default if validation fails
+        if (!validateForm('lecturerRegistrationForm', 'lecturer')) {
+            e.preventDefault();
+            return false;
+        }
+        // If validation passes, show loading and let form submit normally
+        showLoading();
+        // Form will submit normally after this function returns
+    });
+    
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    
+    // Auto-capitalize matric and staff IDs
+    document.getElementById('student_matric_number')?.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    
+    document.getElementById('lecturer_staff_id')?.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Escape to go back to type selection
+        if (e.key === 'Escape' && selectedUserType) {
+            e.preventDefault();
+            showUserTypeSelection();
+        }
+        
+        // Alt+S for student, Alt+L for lecturer
+        if (e.altKey && e.key === 's') {
+            e.preventDefault();
+            selectUserType('student');
+        }
+        if (e.altKey && e.key === 'l') {
+            e.preventDefault();
+            selectUserType('lecturer');
+        }
+    });
+    
+    // Demo data for testing
+    function loadDemoData(userType) {
+        if (userType === 'student') {
+            document.getElementById('student_matric_number').value = 'U1234567';
+            document.getElementById('student_full_name').value = 'John Student';
+            document.getElementById('student_email').value = 'student@university.edu';
+            document.getElementById('student_password1').value = 'Demo123!';
+            document.getElementById('student_password2').value = 'Demo123!';
+            validateStudentPassword();
+        } else if (userType === 'lecturer') {
+            document.getElementById('lecturer_staff_id').value = 'L001';
+            document.getElementById('lecturer_full_name').value = 'Dr. Jane Lecturer';
+            document.getElementById('lecturer_email').value = 'lecturer@university.edu';
+            document.getElementById('lecturer_designation').value = 'Professor';
+            document.getElementById('lecturer_password1').value = 'Demo123!';
+            document.getElementById('lecturer_password2').value = 'Demo123!';
+        }
+    }
+    
+    // Debug function to check form submission
+    function debugFormSubmission(formId) {
+        const form = document.getElementById(formId);
+        console.log('Form elements:');
+        Array.from(form.elements).forEach(element => {
+            console.log(`${element.name}: ${element.value}`);
+        });
+        console.log('Form will submit to:', form.action);
+        console.log('Form method:', form.method);
+    }
+    
+    // Add debug buttons for testing
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add debug buttons (optional - remove in production)
+        const debugDiv = document.createElement('div');
+        debugDiv.className = 'text-center mt-4 space-x-4 text-xs';
+        debugDiv.innerHTML = `
+            <button onclick="loadDemoData('student')" class="text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded">
+                Load Student Demo
+            </button>
+            <button onclick="loadDemoData('lecturer')" class="text-green-600 hover:text-green-800 bg-green-50 px-3 py-1 rounded">
+                Load Lecturer Demo
+            </button>
+            <button onclick="debugFormSubmission('studentRegistrationForm')" class="text-gray-600 hover:text-gray-800 bg-gray-50 px-3 py-1 rounded">
+                Debug Student Form
+            </button>
+            <button onclick="debugFormSubmission('lecturerRegistrationForm')" class="text-gray-600 hover:text-gray-800 bg-gray-50 px-3 py-1 rounded">
+                Debug Lecturer Form
+            </button>
+        `;
+        document.querySelector('.text-center:last-child').after(debugDiv);
+        
+        // Test form submission (optional)
+        console.log('Registration page loaded');
+        console.log('Student form exists:', !!document.getElementById('studentRegistrationForm'));
+        console.log('Lecturer form exists:', !!document.getElementById('lecturerRegistrationForm'));
+    });
+</script>
+{% endblock %}

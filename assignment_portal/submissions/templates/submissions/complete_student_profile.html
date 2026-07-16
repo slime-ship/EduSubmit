@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Complete Profile - EduManage Pro{% endblock %}
+
+{% block content_wrapper %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 animate-fade-in">
+        <!-- Progress Indicator -->
+        <div class="flex items-center justify-center mb-6">
+            <div class="flex items-center">
+                <div class="h-8 w-8 rounded-full bg-primary-600 text-white flex items-center justify-center">
+                    1
+                </div>
+                <div class="w-16 h-1 bg-primary-600"></div>
+                <div class="h-8 w-8 rounded-full bg-primary-600 text-white flex items-center justify-center">
+                    2
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xl p-8">
+            <div class="text-center mb-6">
+                <div class="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                    <i class="fas fa-user-graduate text-blue-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Complete Your Profile</h2>
+                <p class="mt-2 text-gray-600">
+                    Hi {{ user.full_name }}, please provide your academic information
+                </p>
+            </div>
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                
+                <!-- Faculty Selection -->
+                <div>
+                    <label for="{{ form.faculty.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-university mr-1"></i>
+                        Faculty
+                    </label>
+                    <select name="{{ form.faculty.name }}" 
+                            id="{{ form.faculty.id_for_label }}"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                            onchange="updateDepartments(this.value)">
+                        <option value="">Select Faculty</option>
+                        {% for faculty in faculties %}
+                        <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Department Selection -->
+                <div>
+                    <label for="{{ form.department.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-building mr-1"></i>
+                        Department
+                    </label>
+                    <select name="{{ form.department.name }}" 
+                            id="{{ form.department.id_for_label }}"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors"
+                            disabled>
+                        <option value="">Select Department</option>
+                        <!-- Departments will be populated via JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Level Selection -->
+                <div>
+                    <label for="{{ form.level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-layer-group mr-1"></i>
+                        Level
+                    </label>
+                    <select name="{{ form.level.name }}" 
+                            id="{{ form.level.id_for_label }}"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors">
+                        <option value="">Select Level</option>
+                        {% for level in levels %}
+                        <option value="{{ level.id }}">{{ level.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Admission Year -->
+                <div>
+                    <label for="{{ form.admission_year.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Admission Year
+                    </label>
+                    <select name="{{ form.admission_year.name }}" 
+                            id="{{ form.admission_year.id_for_label }}"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors">
+                        <option value="">Select Year</option>
+                     {% for year in years %}
+<option value="{{ year }}">{{ year }}</option>
+{% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" 
+                        class="w-full mt-6 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update departments based on faculty selection
+    async function updateDepartments(facultyId) {
+        const departmentSelect = document.getElementById('{{ form.department.id_for_label }}');
+        
+        if (!facultyId) {
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            departmentSelect.disabled = true;
+            return;
+        }
+        
+        // Fetch departments for the selected faculty
+        try {
+            const response = await fetch(`/api/departments/?faculty=${facultyId}`);
+            const departments = await response.json();
+            
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.id;
+                option.textContent = dept.name;
+                departmentSelect.appendChild(option);
+            });
+            
+            departmentSelect.disabled = false;
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    }
+</script>
+{% endblock %}
