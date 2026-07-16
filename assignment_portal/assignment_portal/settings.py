@@ -50,7 +50,11 @@ SECRET_KEY = "django-insecure-+h^xbe0j#&q2kk1r9q27eda556r@a(!%h0kxu6loscbxkyw5&!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*", ".githubpreview.dev"]
+ALLOWED_HOSTS = ["*", "www.edu-submit.online"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://www.edu-submit.online",
+]
 
 
 # Application definition
@@ -199,4 +203,4 @@ SERVER_EMAIL = 'server@edusubmit.edu'
 
 # Site information (for password reset emails)
 SITE_NAME = "EduSubmit Portal"
-DOMAIN = "localhost:8000"  # Change this to your domain in production
+DOMAIN = "www.edu-submit.online"  # Change this to your domain in production
