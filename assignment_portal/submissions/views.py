@@ -352,6 +352,7 @@ def lecturer_dashboard(request):
         'pending_assignments': pending_submissions,
         'total_courses': total_courses,
         'recent_submissions': recent_submissions,
+        'recent_assignments': recent_submissions,
     }
     return render(request, 'submissions/admin_dashboard.html', context)
 
