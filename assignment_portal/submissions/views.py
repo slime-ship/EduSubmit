@@ -11,7 +11,7 @@ import csv
 
 from .forms import (
     UserRegistrationForm, StudentProfileForm, StudentProfileEditForm,
-    LecturerProfileForm, AssignmentForm, SubmissionForm, GradeAssignmentForm
+    LecturerProfileForm, LecturerProfileEditForm, AssignmentForm, SubmissionForm, GradeAssignmentForm
 )
 from .models import (
     UserProfile, StudentProfile, LecturerProfile, 
@@ -304,12 +304,30 @@ def student_profile(request):
     })
 
 
+@login_required
+@user_passes_test(is_lecturer)
+def lecturer_profile(request):
+    lecturer = request.user.lecturer_profile
+    if request.method == 'POST':
+        form = LecturerProfileEditForm(request.POST, instance=lecturer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('lecturer_profile')
+    else:
+        form = LecturerProfileEditForm(instance=lecturer)
+    return render(request, 'submissions/lecturer_profile.html', {
+        'lecturer': lecturer,
+        'form': form
+    })
+
+
 # ---------- Lecturer & Admin Views ----------
 @login_required
 @user_passes_test(is_lecturer)
 def lecturer_dashboard(request):
     lecturer = request.user.lecturer_profile
-    courses = Course.objects.filter(lecturer=lecturer)
+    courses = Course.objects.filter(department=lecturer.department) if lecturer.department else Course.objects.none()
     assignments = Assignment.objects.filter(course__in=courses)
     submissions = Submission.objects.filter(assignment__in=assignments).select_related('student__user', 'assignment__course', 'grade_record')
     
@@ -340,7 +358,7 @@ def lecturer_assignments(request):
     lecturer = request.user.lecturer_profile
     status_filter = request.GET.get('status', 'all')
     
-    courses = Course.objects.filter(lecturer=lecturer)
+    courses = Course.objects.filter(department=lecturer.department) if lecturer.department else Course.objects.none()
     submissions = Submission.objects.filter(assignment__course__in=courses)
     
     if status_filter != 'all':
@@ -441,7 +459,7 @@ def grade_assignment(request, assignment_id):
 @user_passes_test(is_lecturer)
 def lecturer_courses(request):
     lecturer = request.user.lecturer_profile
-    courses = Course.objects.filter(lecturer=lecturer).select_related('department', 'level')
+    courses = Course.objects.filter(department=lecturer.department).select_related('department', 'level') if lecturer.department else Course.objects.none()
     
     return render(request, 'submissions/lecturer_courses.html', {
         'courses': courses,

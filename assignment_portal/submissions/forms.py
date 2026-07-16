@@ -362,7 +362,7 @@ class AssignmentForm(forms.ModelForm):
         lecturer = kwargs.pop('lecturer', None)
         super().__init__(*args, **kwargs)
         if lecturer:
-            self.fields['course'].queryset = Course.objects.filter(lecturer=lecturer)
+            self.fields['course'].queryset = Course.objects.filter(department=lecturer.department) if lecturer.department else Course.objects.none()
         self.fields['session'].queryset = AcademicSession.objects.all()
         self.fields['semester'].queryset = Semester.objects.all()
 
@@ -512,3 +512,100 @@ class StudentProfileEditForm(forms.ModelForm):
             user.save()
             student_profile.save()
         return student_profile
+
+
+class LecturerProfileEditForm(forms.ModelForm):
+    full_name = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+            'placeholder': 'Full Name'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+            'placeholder': 'Email Address'
+        })
+    )
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+            'placeholder': 'Leave blank to keep current password'
+        }),
+        help_text="Leave blank if you do not want to change your password."
+    )
+    confirm_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+            'placeholder': 'Confirm new password'
+        })
+    )
+
+    class Meta:
+        model = LecturerProfile
+        fields = ['designation', 'office_location', 'office_hours', 'phone_extension']
+        widgets = {
+            'designation': forms.TextInput(attrs={
+                'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+                'placeholder': 'Designation'
+            }),
+            'office_location': forms.TextInput(attrs={
+                'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+                'placeholder': 'Office Location'
+            }),
+            'office_hours': forms.Textarea(attrs={
+                'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+                'placeholder': 'e.g., Mon/Wed 10:00 AM - 12:00 PM',
+                'rows': 2
+            }),
+            'phone_extension': forms.TextInput(attrs={
+                'class': 'form-input block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-colors',
+                'placeholder': 'Phone Extension'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields['full_name'].initial = self.instance.user.full_name
+            self.fields['email'].initial = self.instance.user.email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password or confirm_password:
+            if password != confirm_password:
+                self.add_error('confirm_password', 'Passwords do not match.')
+
+        # Email uniqueness check
+        email = cleaned_data.get('email')
+        if email:
+            qs = UserProfile.objects.filter(email=email)
+            if self.instance and self.instance.user:
+                qs = qs.exclude(id=self.instance.user.id)
+            if qs.exists():
+                self.add_error('email', 'This email is already taken.')
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        lecturer_profile = super().save(commit=False)
+        user = lecturer_profile.user
+        user.full_name = self.cleaned_data['full_name']
+        user.email = self.cleaned_data['email']
+        
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+            
+        if commit:
+            user.save()
+            lecturer_profile.save()
+        return lecturer_profile

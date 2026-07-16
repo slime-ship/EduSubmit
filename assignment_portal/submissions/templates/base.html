@@ -205,16 +205,16 @@
                                 <i class="fas fa-tasks"></i>
                                 <span>Assignments</span>
                             </a>
-                            <a href="" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
+                            <a href="{% url 'student_dashboard' %}" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
                                 <i class="fas fa-book"></i>
                                 <span>Courses</span>
                             </a>
                         {% elif user.user_type == 'lecturer' %}
-                            <a href="" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
+                            <a href="{% url 'lecturer_courses' %}" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
                                 <i class="fas fa-chalkboard-teacher"></i>
                                 <span>My Courses</span>
                             </a>
-                            <a href="" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
+                            <a href="{% url 'lecturer_assignments' %}" class="text-gray-700 hover:text-primary-600 font-medium px-3 py-2 rounded-md hover:bg-primary-50 flex items-center space-x-2">
                                 <i class="fas fa-clipboard-check"></i>
                                 <span>Grade Assignments</span>
                             </a>
@@ -286,11 +286,11 @@
                                  x-transition:leave-start="opacity-100 scale-100"
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-10">
-                                <a href="" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <a href="{% if user.user_type == 'student' %}{% url 'student_profile' %}{% elif user.user_type == 'lecturer' %}{% url 'lecturer_profile' %}{% endif %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
                                     <i class="fas fa-user mr-3 text-gray-400"></i>
                                     Your Profile
                                 </a>
-                                <a href="" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <a href="{% if user.user_type == 'student' %}{% url 'student_profile' %}{% elif user.user_type == 'lecturer' %}{% url 'lecturer_profile' %}{% endif %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
                                     <i class="fas fa-cog mr-3 text-gray-400"></i>
                                     Settings
                                 </a>
@@ -326,27 +326,27 @@
                     </a>
                     
                     {% if user.user_type == 'student' %}
-                        <a href="" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
+                        <a href="{% url 'student_assignments' %}" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
                             <i class="fas fa-tasks mr-3"></i>
                             Assignments
                         </a>
-                        <a href="" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
+                        <a href="{% url 'student_dashboard' %}" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
                             <i class="fas fa-book mr-3"></i>
                             Courses
                         </a>
                     {% elif user.user_type == 'lecturer' %}
-                        <a href="" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
+                        <a href="{% url 'lecturer_courses' %}" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
                             <i class="fas fa-chalkboard-teacher mr-3"></i>
                             My Courses
                         </a>
-                        <a href="" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
+                        <a href="{% url 'lecturer_assignments' %}" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
                             <i class="fas fa-clipboard-check mr-3"></i>
                             Grade Assignments
                         </a>
                     {% endif %}
                     
                     <div class="border-t border-gray-200 pt-2 mt-2">
-                        <a href="" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
+                        <a href="{% if user.user_type == 'student' %}{% url 'student_profile' %}{% elif user.user_type == 'lecturer' %}{% url 'lecturer_profile' %}{% endif %}" class="block px-3 py-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-primary-50">
                             <i class="fas fa-user mr-3"></i>
                             Profile
                         </a>

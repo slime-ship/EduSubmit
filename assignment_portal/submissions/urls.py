@@ -30,6 +30,7 @@ urlpatterns = [
     path('lecturer/grade/<int:assignment_id>/', views.grade_assignment, name='grade_assignment'),
     path('lecturer/students/', views.lecturer_students, name='lecturer_students'),
     path('lecturer/create-assignment/', views.create_assignment, name='create_assignment'),
+    path('lecturer/profile/', views.lecturer_profile, name='lecturer_profile'),
 
     # Global Tools
     path('search/', views.global_search, name='global_search'),
