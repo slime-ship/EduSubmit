@@ -27,14 +27,14 @@ import cloudinary.api
 
 cloudinary.config(
     cloud_name="dlzn0moho",
-    api_key="563396395915366",
-    api_secret="pCSSrLNvxfFSEzY4ZnaOiF5u93o"
+    api_key="835789542141225",
+    api_secret="PDNgjChzyJ1vI_QiyGVk8vBfjgw"
 )
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dlzn0moho',
-    'API_KEY': '563396395915366',
-    'API_SECRET': 'pCSSrLNvxfFSEzY4ZnaOiF5u93o',
+    'API_KEY': '835789542141225',
+    'API_SECRET': 'PDNgjChzyJ1vI_QiyGVk8vBfjgw',
 }
 
 MEDIA_URL = '/media/'
