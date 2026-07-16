@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 import os  # Added for file validation
 from .models import (
     UserProfile, StudentProfile, LecturerProfile, 
-    Faculty, Department, Level, Assignment, Submission, Grade, AcademicSession, Semester
+    Faculty, Department, Level, Course, Assignment, Submission, Grade, AcademicSession, Semester
 )
 
 class UserRegistrationForm(UserCreationForm):
